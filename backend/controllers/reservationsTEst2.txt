@@ -1,0 +1,280 @@
+import { db } from "../db.js";
+import { register } from "./authen.js";
+
+
+export const checkRes = (req,res) =>{
+    const q = "SELECT tableName FROM reservations WHERE date = ? AND time = ?"
+    db.query(q,[req.body.date,req.body.time],(err,data1)=>{
+        // req.body.hasReserations = false;
+        let test = false;
+        if (data1.length === 0)
+        {
+            //there are no reservations on that day
+            return test;
+        }
+        test = true;
+        return test; //there are reservations on that day
+    })
+};
+
+
+export const addReserve = (req,res)=>{
+    // res.json("from controller")
+    //const {currentUser} = useContext(AuthContext);
+    //Declare query
+   
+    // req.body.tableName = test
+    // values[3] = "Table 5"
+    // db.query(q2,[values],(err,data)=>{
+    //     //console.log(data)"
+    //     if(err) return res.json(err)
+    //     return res.json(data)
+    // });
+    
+    
+
+
+    //grab reserations during same date/time
+    const q = "SELECT tableName FROM reservations WHERE date = ? AND time = ?"
+    db.query(q,[req.body.date,req.body.time],(err,data1)=>{
+        //console.log(data1) //displays data1
+        
+        //if no reservations on this day/time, so all Tables are available
+        if (data1.length === 0)
+        {
+            //check to see if a combination is needed
+            const tableT = "SELECT * FROM table_tracker"
+            db.query(tableT,(err,data2)=>{
+                //iterates through list of tables on Hand
+                for (let i= 0; i < data2.length;i++)
+                {
+                    //Check if we have table and equal to or greater than party
+                    if(data2[i].on_Hand !== 0 && data2[i].table_size >= req.body.guests)
+                    {
+                        var tableN2 = ""
+                        const q2 = "INSERT INTO reservations (`date`,`time`,`guests`,`tableName`,`userID`,`fullname`,`email`,`phone`) VALUES (?)"
+                        const values = [
+                            req.body.date,
+                            req.body.time,
+                            req.body.guests,
+                            tableN2,
+                            req.body.userID,
+                            req.body.fullname,
+                            req.body.email,
+                            req.body.phone
+                        ]
+                        values[3] = data2[i].table_name;
+                        console.log("All tables free NEW")
+                        db.query(q2,[values],(err,data3)=>{
+                            //console.log(data)"
+                            if(err) return res.json(err)
+                            return res.json(data3)
+                        });
+                    }
+                } 
+            }) 
+        };
+
+
+        //There are reservations for this time, so grab them
+        const tableT = "SELECT * FROM table_tracker"
+        db.query(tableT,(err,data2)=>{
+
+            for(let i = 0; i < data1.length; i++)
+            {
+                //iterates through list of tables on Hand
+                for (let j = 0; j < data2.length;j++)
+                {
+                    //if tables same name decreament on_Hand
+                    if(data1[i].table_name === data2[j].table_name)
+                    {
+                        data2[j].on_Hand = data2[j].on_Hand - 1
+                    }
+                } 
+            }
+
+            // var Avail = false;
+            // var tableName;
+
+            //req.body.table = data2[0].table_name;
+            //iterates through list of tables on Hand
+            for (let i= 0; i < data2.length;i++)
+            {
+                //Check if we have table and equal to or greater than party
+                if(data2[i].on_Hand !== 0 && data2[i].table_size >= req.body.guests)
+                {
+                    var tableN = ""
+                    const q3 = "INSERT INTO reservations (`date`,`time`,`guests`,`tableName`,`userID`,`fullname`,`email`,`phone`) VALUES (?)"
+                    const values2 = [
+                        req.body.date,
+                        req.body.time,
+                        req.body.guests,
+                        tableN,
+                        req.body.userID,
+                        req.body.fullname,
+                        req.body.email,
+                        req.body.phone
+                    ]
+                    // Avail = true;
+                    values2[3] = data2[i].table_name;
+                    db.query(q3,[values2],(err,data)=>{
+                        if(err) return res.json(err)
+                        return res.json(data)
+                    });
+                }
+            } 
+        })
+
+//ABOVE WORKS
+
+
+        //     //if there is no single table available, find combo of tables
+        //     var combo = false;
+        //     let table_types = [];
+        //     var total = 0;
+        //     if(Avail === false)
+        //     {
+        //         //look through every table type
+        //         for(var i = 0; i < data2.length;i++)
+        //         {
+        //             //add available tables until it meets or exceedes number of guests
+        //             for(var j = 0; j< data2[i].on_Hand; j++){
+        //                 if(total < req.body.guests){
+        //                     total = total + data2[i].table_size
+        //                     data2[j].on_Hand = data2[j].on_Hand - 1
+        //                     table_types.push(data2[i].table_name)
+        //                 }
+        //                 else {
+        //                     combo = true;
+        //                     break;
+        //                 }
+        //             }
+        //         }
+        //     }
+        //     //no table avaialable, inform customer to try again
+        //     if(combo === false && Avail === false){
+        //         return //something, might have to make two functions to return if no reservation can be made
+        //     }
+        // // console.log(table_types)
+        //     //if we can combine tables, add a reservation in the reservation_table for each table being used
+        //     if(combo === true){
+        //         //for loop query
+        //         // for (var i = 0; i < table_types.length;i++)
+        //         // {
+        //             //req.body.phone = "11111111"
+        //             req.body.table = table_types[i]
+        //             db.query(q2,[values],(err,data)=>{
+        //                 if(err) return res.json(err)
+        //                 return res.json(data)
+        //             });
+        //        // }
+        //     }
+
+
+        })
+     }
+
+
+
+
+// function getTables(req) {
+
+//     // return req.fullname;
+
+//     //gets all tables that we have on hand
+//     const tableT = "SELECT * FROM table_tracker"
+//     db.query(tableT,(err,data2)=>{
+//         //console.log(data2) //display data1
+//         //data1[0].table_name gets one element from data1 query
+//         //data1.length gets the size
+//         //modify tables on hand
+//         //iterates through tables taken
+//         let test = data2[0].on_Hand
+//         console.log(test)
+//         console.log("waht")
+//         return(data2)
+
+    
+        
+//     //     for(let i = 0; i < data1.length;i++)
+//     //     {
+//     //         //iterates through list of tables on Hand
+//     //         for (let j = 0; j < data2.length;j++)
+//     //         {
+//     //             //if tables same name decreament on_Hand
+//     //             if(data1[i].table_name === data2[j].table_name)
+//     //             {
+//     //                 data2[j].on_Hand = data2[j].on_Hand - 1
+
+//     //             }
+//     //         } 
+//     //     }
+
+//     //     var Avail = false;
+//     //     var tableName;
+
+
+//     //     req.body.table = data2[0].table_name;
+//     //     //iterates through list of tables on Hand
+//     //     for (let i= 0; i < data2.length;i++)
+//     //     {
+//     //         //Check if we have table and equal to or greater than party
+//     //         if(data2[i].on_Hand !== 0 && data2[i].table_size >= req.body.guests)
+//     //         {
+//     //             Avail = true;
+//     //             req.body.table = data2[i].table_name;
+//     //             db.query(q2,[values],(err,data)=>{
+//     //                 if(err) return res.json(err)
+//     //                 return res.json(data)
+//     //             });
+//     //             break;
+//     //         }
+//     //     } 
+
+//     //     //if there is no single table available, find combo of tables
+//     //     var combo = false;
+//     //     let table_types = [];
+//     //     var total = 0;
+//     //     if(Avail === false)
+//     //     {
+//     //         //look through every table type
+//     //         for(var i = 0; i < data2.length;i++)
+//     //         {
+//     //             //add available tables until it meets or exceedes number of guests
+//     //             for(var j = 0; j< data2[i].on_Hand; j++){
+//     //                 if(total < data1.guests){
+//     //                     total = total + data2[i].table_size
+//     //                     data2[j].on_Hand = data2[j].on_Hand - 1
+//     //                     table_types.push(data2[i].table_name)
+//     //                 }
+//     //                 else {
+//     //                     combo = true;
+//     //                     break;
+//     //                 }
+//     //             }
+//     //         }
+//     //     }
+
+//     //     //no table avaialable, inform customer to try again
+//     //     if(combo === false && Avail === false){
+//     //         return //something, might have to make two functions to return if no reservation can be made
+//     //     }
+
+//     //     //if we can combine tables, add a reservation in the reservation_table for each table being used
+//     //     if(combo === true){
+//     //         //for loop query
+//     //         for (var i = 0; i < table_types.length;i++)
+//     //         {
+//     //             req.body.table = table_types[i];
+//     //             db.query(q2,[values],(err,data)=>{
+//     //                 if(err) return res.json(err)
+//     //                 return res.json(data)
+//     //             });
+//     //         }
+//     //     }
+
+
+//     })
+
+
+// }

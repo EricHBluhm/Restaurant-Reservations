@@ -1,16 +1,15 @@
-# Restaurant-Reservations
+# SoftwareEngineeringProject
+Description:  Software Engineering Project
 
-Description: Software Engineering Project
-
-A restaurant chain has reached out to your team to build a reservation system.
+A restaurant chain has reached out to your team to build a reservation system. 
 
 Here are the details:
 
 Two categories of users / customers: guest user or registered user.
 
-Users should be able to search for a table and reserve.
+Users should be able to search for a table and reserve. 
 
-User doesn’t need to login to the system to reserve a table. If registered users, they can login.
+User doesn’t need to login to the system to reserve a table. If registered users, they can login. 
 
 User enters name, phone, email, date and time (date picker), and # of guests for dining and system presents available tables.
 
